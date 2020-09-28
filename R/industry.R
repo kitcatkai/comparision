@@ -23,21 +23,21 @@ load_file <- function(file1, file2, file3, group_by = NULL){
   } else {
     first_order <- group_by
   }
-  print(colnames(df))
+
   load_result_1 <- function(first_order) {
     result <- df %>% tidyr::drop_na() %>%
       dplyr::group_by(first_order = get(first_order), industry_group_name) %>%
       dplyr::summarise(total=total) %>%
       dplyr::mutate(freq = total / sum(total) * 100)
-    print(colnames(result))
+
     result_1 <- ggplot2::ggplot(data=result, ggplot2::aes(x=reorder(industry_group_name, total), y=total, fill=first_order)) + ggplot2::geom_bar(stat = "identity", position = 'dodge') + ggplot2::xlab("Industry") +
       ggplot2::ylab("Number of Members") + ggplot2::coord_flip() + ggplot2::guides(fill=ggplot2::guide_legend(title="Age Bracket")) + ggplot2::theme_bw()
-    print(result_1)
+
     result_1
   }
-  print("checkpoint1")
+
   result_1 <- load_result_1(first_order)
-  print("checkpoint2")
+
   #Industry Transition Period Plot
   df <- read.csv(file2,na.strings=c("","NA"))
   df <- df %>% dplyr::filter(!industry_group_name_b %in% c('Arts', 'Agriculture', 'Public Safety')) %>% dplyr::filter(!industry_group_name_a %in% c('Arts', 'Agriculture', 'Public Safety'))
