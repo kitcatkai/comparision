@@ -31,7 +31,7 @@ load_file <- function(file1, file2, file3, group_by = NULL){
       dplyr::mutate(freq = total / sum(total) * 100)
 
     result_1 <- ggplot2::ggplot(data=result, ggplot2::aes(x=reorder(industry_group_name, total), y=total, fill=first_order)) + ggplot2::geom_bar(stat = "identity", position = 'dodge') + ggplot2::xlab("Industry") +
-      ggplot2::ylab("Number of Members") + ggplot2::coord_flip() + ggplot2::guides(fill=ggplot2::guide_legend(title="Age Bracket")) + ggplot2::theme_bw()
+      ggplot2::ylab("Number of Members") + ggplot2::coord_flip() + ggplot2::guides(fill=ggplot2::guide_legend(title=first_order)) + ggplot2::theme_bw()
 
     result_1
   }
