@@ -1,79 +1,120 @@
+demo <- function(df,first_order) {
+  result <- (df %>%
+               group_by(first_order = get(first_order), industry_group_name_a) %>%
+               summarise(total = n_distinct(member_id)) %>% mutate(pct = total/sum(total) * 100))
+
+  result_1 <- (ggplot(data=result, aes(x=reorder(industry_group_name_a, pct), y=pct, fill=first_order))
+               + geom_bar(stat = "identity", position = 'dodge') + xlab("Industry")
+               + ylab("Percentage of Members")
+               + coord_flip()
+               + guides(fill=guide_legend(title=first_order))
+               + theme_bw())
+
+  result_1
+}
+
+
+transit <- function(df, first_order) {
+
+  df <- (df %>% filter(gap > 0))
+  result <- (ggplot(df, aes(gap, industry_group_name_b))
+               + geom_boxplot()
+               + facet_wrap(~ get(first_order))
+               + theme_bw()
+               + labs(y="Destination Industry", x="Months", title = "Time To Transit To An Industry "))
+  result
+}
+
+#' Generates ggplots by comparing among different user-defined groups.
 #'
-#' #' Pipe
+#' `load_file()` loads .csv file that contains `u_egdata.base_job_tran_1step` column fields.
+#' The function returns 2 ggplots:
+#' 1) `transit` - Box plot for the time it takes to transit to various industries by user-defined groups
+#' 2) `$demo` - Bar plot for the distribution of user-defined groups across various industries
 #'
-#' Put description here
 #'
-#' @importFrom magrittr %>%
-#' @name %>%
-#' @rdname pipe
+#' @import magrittr
+#' @import ggplot2
+#' @import dplyr
+#' @param file Path to the input file
+#' @param group_by user-defined groups. By default, it will be gender.
+#' @return `load_file()` returns 2 ggplots objects `transit` and `demo`
+#' @author Kai Wei Tan <kaitan@linkedin.com>
 #' @export
-#' @param lhs,rhs specify what lhs and rhs are
 #' @examples
-#' # some examples if you want to highlight the usage in the package
-NULL
+#'
+#' #load library
+#' library('comparision')
+#'
+#' #calling load_file function
+#' test <- load_file("./dummy_data.csv", group_by = 'age_bracket')
+#'
+#' #Plot Box plot for the time it takes to transit to various industries by different age-bracket groups
+#' test$transit
+#'
+#' #Bar plot for the distribution of different age-bracket groups across various industries
+#' test$demo
 
-#' @export
+load_file <- function(file, group_by = NULL){
+  df <- read.csv(file)
 
-load_file <- function(file1, file3, group_by = NULL){
-  df <- read.csv(file1, na.strings=c("","NA"))
-  df[df==""] <- NA
   first_order <- ''
   if (is.null(group_by)) {
-    first_order <- 'age_bracket'
+    first_order <- 'gender'
   } else {
     first_order <- group_by
   }
 
-  load_result_1 <- function(first_order) {
-    result <- df %>%
-      dplyr::group_by(first_order = get(first_order), industry_group_name_a) %>%
-      dplyr::summarise(total = dplyr::n_distinct(member_id))
+  result_1 <- demo(df,first_order)
+  result_2 <- transit(df,first_order)
 
-    result_1 <- ggplot2::ggplot(data=result, ggplot2::aes(x=reorder(industry_group_name_a, total), y=total, fill=first_order)) + ggplot2::geom_bar(stat = "identity", position = 'dodge') + ggplot2::xlab("Industry") +
-      ggplot2::ylab("Number of Members") + ggplot2::coord_flip() + ggplot2::guides(fill=ggplot2::guide_legend(title=first_order)) + ggplot2::theme_bw()
-
-    result_1
+  return <- list("demo" = result_1, "transit" = result_2)
   }
 
-  result_1 <- load_result_1(first_order)
+#' Generates cosine histogram across all possible pairwise industries
+#'
+#' `load_cosine()` loads .csv file that contains `industry_group_name_a`, `industry_group_name_b` and `cosine_similarity_group` column fields.
+#' The function returns 1 ggplot:
+#' 1) `skills` - Histogram plot of cosine similarity for all possible pairwise industries
+#'
+#' @import magrittr
+#' @import ggplot2
+#' @import dplyr
+#' @param file Path to the input file
+#' @param field Column name of the cosine index. By default, `cosine_similarity_group` is the column field.
+#' @return `load_cosine()` returns 1 ggplot object `skills`
+#' @author Kai Wei Tan <kaitan@linkedin.com>
+#' @export
+#' @examples
+#'
+#' #load library
+#' library('comparision')
+#'
+#' #calling load_file function
+#' test <- load_cosine("./dummy_data.csv", field = 'cosine_similarity_group')
+#'
+#' #Plot histogram across all possible pairwise industries
+#' test$skills
+#'
+load_cosine <- function(file, field = NULL){
+  df <- read.csv(file)
 
-  main_duplicate <- df
-  main_duplicate <- main_duplicate %>% dplyr::filter(gap > 0)
-
-  result <- main_duplicate %>% dplyr::filter(gap > 0) %>%
-    dplyr::group_by(industry_group_name_b) %>%
-    dplyr::summarise(mean = mean(gap), median = median(gap)) %>% dplyr::arrange(desc(median))
-
-  main_duplicate$industry_group_name_b <- factor(main_duplicate$industry_group_name_b, levels = result$industry_group_name_b)
-
-  x_axis <- main_duplicate %>%
-    dplyr::summarise(mean = mean(gap), median = median(gap))
-
-  #Industry Transition Period Plot
-  result_2 <- ggplot2::ggplot(main_duplicate , ggplot2::aes(gap, industry_group_name_b)) + ggplot2::geom_boxplot() +   ggplot2::labs(y="Destination Industry",
-                                                                                                                                     x="Months",
-                                                                                                                                     title = "Time To Transit To An Industry ",
-                                                                                                                                     subtitle="Sorted by Median in Ascending Order") +   #theme with white background
-    ggplot2::theme_bw() +
-
-    #eliminates background, gridlines, and chart border
-    ggplot2::theme(
-      plot.background = ggplot2::element_blank(),
-      panel.grid.major = ggplot2::element_blank(),
-      panel.grid.minor = ggplot2::element_blank(),
-      panel.border = ggplot2::element_blank()
-    ) +
-    ggplot2::geom_vline(ggplot2::aes(xintercept = unlist(x_axis['mean'])), col = "red")
-
-  df <- read.csv(file3)
-  result_3 <- ggplot2::ggplot(df, ggplot2::aes(cosine_similarity_group)) +
-    ggplot2::geom_density(fill = "blue") +
-    ggplot2::theme_minimal() +
-    ggplot2::labs(y = "Density", x='Similarity')  +
-    ggplot2::scale_x_continuous(breaks=seq(0, 1, 1)) +
-    ggplot2::facet_grid(industry_group_name_b~industry_group_name_a, scales = "free")
-
-  newList <- list("demo" = result_1, "transit" = result_2, "skills" = result_3)
+  cosine <- ''
+  if (is.null(field)) {
+    cosine <- 'cosine_similarity_group'
+  } else {
+    cosine <- field
   }
+
+  result <- ggplot(df, aes(get(cosine))) +
+    geom_density(fill = "blue") +
+    theme_minimal() +
+    labs(y = "Density", x='Similarity')  +
+    scale_x_continuous(breaks=seq(0, 1, 1)) +
+    facet_grid(industry_group_name_b~industry_group_name_a, scales = "free")
+
+  return <- list("skills" = result)
+}
+
 
 

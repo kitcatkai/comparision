@@ -1,0 +1,32 @@
+---
+title: "Generates ggplots by comparing among different user-defined groups."
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+setwd("/Users/kaitan/comparision/")
+
+install.packages('devtools')
+
+devtools::install_github("kitcatkai/comparision", force=TRUE)
+
+library('comparision')
+
+
+#calling load_file function
+test <- read.csv("./cos_group_100.csv")
+
+
+head(test)
+```
