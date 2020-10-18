@@ -1,3 +1,23 @@
+eg_theme <- theme(
+  text = element_text(family = 'Community'),
+  legend.position = 'bottom',
+  legend.key = element_blank(),
+  legend.text = element_text(family = 'Community', size = 21),
+  legend.title = element_blank(),
+  legend.background = element_rect(fill = "#FDFAF6"),
+  plot.title = element_text(family = 'Community', color = '#44712e', size = 45),
+  plot.subtitle = element_text(family = 'Community', color = '#38434f', size = 20),
+  axis.text.x = element_text(family = 'Community', color = '#38434f', size = 24),
+  axis.text.y = element_text(family = 'Community', color = '#38434f', size = 24),
+  panel.grid.major.y = element_line(colour = '#e9e5df', size = .2),
+  panel.background = element_rect(fill='#FDFAF5',color='#FDFAF5'),
+  plot.background = element_rect(fill = "#FDFAF5"),
+  panel.grid.major.x = element_blank(),
+  axis.title.x = element_blank(),
+  axis.title.y = element_text(family = 'Community', face = 'bold', color = '#38434f', size = 36),
+  plot.caption = element_text(hjust = 0, size = 18)
+)
+
 demo <- function(df,first_order) {
   result <- (df %>%
                group_by(first_order = get(first_order), industry_group_name_a) %>%
@@ -8,7 +28,7 @@ demo <- function(df,first_order) {
                + ylab("Percentage of Members")
                + coord_flip()
                + guides(fill=guide_legend(title=first_order))
-               + theme_bw())
+               + eg_theme)
 
   result_1
 }
@@ -20,10 +40,11 @@ transit <- function(df, first_order) {
   result <- (ggplot(df, aes(gap, industry_group_name_b))
                + geom_boxplot()
                + facet_wrap(~ get(first_order))
-               + theme_bw()
-               + labs(y="Destination Industry", x="Months", title = "Time To Transit To An Industry "))
+               + labs(y="Destination Industry", x="Months", title = "Time To Transit To An Industry ")
+               + eg_theme)
   result
 }
+
 
 #' Generates ggplots by comparing among different user-defined groups.
 #'
@@ -107,10 +128,9 @@ load_cosine <- function(file, field = NULL){
   }
 
   result <- ggplot(df, aes(get(cosine))) +
-    geom_density(fill = "blue") +
-    theme_minimal() +
-    labs(y = "Density", x='Similarity')  +
-    scale_x_continuous(breaks=seq(0, 1, 1)) +
+    geom_density() +
+    eg_theme +
+    labs(y = "Density", x='Similarity') + scale_x_continuous(breaks=seq(0, 1, 1)) +
     facet_grid(industry_group_name_b~industry_group_name_a, scales = "free")
 
   return <- list("skills" = result)

@@ -1,5 +1,5 @@
 ---
-title: "Generates ggplots by comparing among different user-defined groups."
+title: "Generates ggplots for (1) cosine index distribution across all possible pairwise industries (2) box and bar plots by comparing among different user-defined groups"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{introduction}
@@ -14,19 +14,77 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
+What does the package do?
+
+This R package generates ggplots for (1) cosine index distribution across all possible pairwise industries (2) box and bar plots by comparing among different user-defined groups.
+
+# 1. Installing the package
+
+`comparision` is available on Github and can be installed as follows in an R session:
+
+```{r message=FALSE, warning=FALSE}
+#install the devtools to download the R package from comparision repo in Github
+install.packages('devtools', repos = "http://cran.us.r-project.org")
+devtools::install_github("kitcatkai/comparision")
+```
+
+Once installed, the package can be loaded in a given R session using:
+
+```{r}
+#import comparision library
+library('comparision')
+```
+
+
+# 2. Download an example dataset
+
+To illustrate how the package works, we can download a sample of data from `u_egdata.base_job_tran_1step` base table and name it as `cos_group_100.csv`. 
+
+After preparing the data, we can call `load_cosine()` with the file directory and the column name for the cosine index.
+
+```{r}
+#set to your working directory
 setwd("/Users/kaitan/comparision/")
 
-install.packages('devtools')
+#calling load_file function
+cosine <- load_cosine("./cos_group_100.csv", field = 'cosine_similarity_group')
+```
 
-devtools::install_github("kitcatkai/comparision", force=TRUE)
+# 3. Plot histogram across all possible pairwise industries
 
-library('comparision')
+The easiest way of visualizing the histogram across all possible pairwise industries is through `cosine$skills`
 
+```{r}
+#Plot histogram across all possible pairwise industries
+cosine$skills
+```
+
+# 4. Generating ggplots by comparing among different user-defined groups
+
+We can call `load_file()` with the file directory and the user-defined groups for `group_by`. Note that `load_file()` is different from the `load_cosine()`.
+
+```{r message=FALSE, warning=FALSE}
+setwd("/Users/kaitan/comparision/")
 
 #calling load_file function
-test <- read.csv("./cos_group_100.csv")
-
-
-head(test)
+test <- load_file("./dummy_data.csv", group_by = 'age_bracket')
 ```
+
+# 5(a) Plotting the box plot for the time it takes to transit to various industries by different age-bracket groups.
+
+The easiest way of visualizing the box plot for the time it takes to transit to various industries by different age-bracket groups is `test$transit`. Remember that you can set you user-defined group in `group_by` as shown earlier.
+
+```{r}
+#Plot Box plot for the time it takes to transit to various industries by different age-bracket groups
+test$transit
+```
+
+# 5(b) Plotting the bar plot for the distribution of different age-bracket groups across various industries
+
+The easiest way of visualizing bar plot for the distribution of different age-bracket groups across various industries is `test$demo`.
+
+```{r message=FALSE, warning=FALSE}
+#Bar plot for the distribution of different age-bracket groups across various industries
+test$demo
+```
+
